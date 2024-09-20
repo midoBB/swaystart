@@ -1,0 +1,7 @@
+build/
+dist/
+sway_start
+script.spec
+script
+sway_start
+__pycache__/

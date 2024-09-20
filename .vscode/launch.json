@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: script.py",
+            "pythonPath": ".direnv/python-3.12/bin/python",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "./script.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}
