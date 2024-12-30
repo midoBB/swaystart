@@ -1,15 +1,20 @@
-.PHONY: configure make run clean
+PREFIX ?= ~/.local/bin/
+.PHONY: configure make run clean install
 
-all: configure make
+all: configure make install
 configure:
-	pip install -r requirement.txt
+	@python -m venv .venv
+	@./.venv/bin/python -m pip install -r requirement.txt
 
 make:
 	@pyinstaller --onefile script.py
-	@mv dist/script sway_start
+	@cp dist/script sway_start
+
+install:
+	@install -m 755 sway_start $(PREFIX)
 
 run: make
 	./sway_start
 
 clean:
-	@rm -rf dist build script.spec
+	@rm -rf dist build script.spec .venv
