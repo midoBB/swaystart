@@ -1,6 +1,5 @@
 import sys
 import time
-
 import i3ipc
 
 
@@ -15,6 +14,18 @@ def find_windows(i3, thunderbird_name, todoist_name):
     return thunderbird, todoist
 
 
+def is_layout_correct(i3, thunderbird, todoist):
+    workspace = thunderbird.workspace().num if thunderbird else None
+    # Check if both are on the same workspace
+    if (
+        workspace is not None
+        and todoist.workspace().num == workspace
+        and thunderbird.rect.width / (thunderbird.rect.width + todoist.rect.width) > 0.66
+    ):
+        return True
+    return False
+
+
 def adjust_layout(thunderbird_name, todoist_name):
     # Connect to i3
     i3 = i3ipc.Connection()
@@ -26,8 +37,12 @@ def adjust_layout(thunderbird_name, todoist_name):
         if not thunderbird or not todoist:
             print("Waiting for Thunderbird and Todoist windows...")
             time.sleep(3)
-
     print("Both windows found. Proceeding with layout adjustment.")
+
+    # Check if the layout is already correct
+    if is_layout_correct(i3, thunderbird, todoist):
+        print("Layout is already correct. No changes needed.")
+        return
 
     # Get the current workspace
     current_workspace = i3.get_tree().find_focused().workspace().num
