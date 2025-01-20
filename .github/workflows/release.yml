@@ -10,18 +10,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Read Python version from .tool-versions
+      - name: Read Python version from mise.toml
         id: python_version
         run: |
-          PYTHON_VERSION=$(grep 'python' .tool-versions | awk '{print $2}')
-          echo "Python version specified in .tool-versions: $PYTHON_VERSION"
+          PYTHON_VERSION=$(grep 'python' mise.toml | awk '{print $3}' | sed 's/"//g')
+          echo "Python version specified in mise.toml: $PYTHON_VERSION"
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
-        run: pip install -r requirement.txt
+        run: pip install -r requirements.txt
       - name: Build executable
         run: |
           pyinstaller --onefile script.py
