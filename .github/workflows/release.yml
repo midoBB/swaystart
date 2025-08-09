@@ -1,43 +1,58 @@
-name: Build and Release Executable
+# SPDX-FileCopyrightText: 2025 mohamed hamdi <haamdi@outlook.com>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+name: Release
+
 on:
   push:
     tags:
-      - '*'
-  workflow_dispatch:
+      - 'v*'
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Read Python version from mise.toml
-        id: python_version
-        run: |
-          PYTHON_VERSION=$(grep 'python' mise.toml | awk '{print $3}' | sed 's/"//g')
-          echo "Python version specified in mise.toml: $PYTHON_VERSION"
-          echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Build executable
-        run: |
-          pyinstaller --onefile script.py
-          mv dist/script sway_start
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: "Release ${{ github.ref }}"
-          draft: false
-          prerelease: false
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            sway_start
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Build binaries
+      run: |
+        # Get version from tag
+        VERSION=${GITHUB_REF#refs/tags/}
+
+        # Create dist directory
+        mkdir -p dist
+
+        # Build for x86_64
+        uv run pyinstaller --onefile script.py --log-level=FATAL --name swaystart-linux-amd64
+
+    - name: Create checksums
+      run: |
+        cd dist
+        sha256sum swaystart-* > checksums.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          dist/swaystart-linux-amd64
+          dist/checksums.txt
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,10 @@
+[project]
+name = "swaystart"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "i3ipc>=2.2.1",
+    "pyinstaller>=6.15.0",
+]
