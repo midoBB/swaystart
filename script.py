@@ -7,14 +7,14 @@ def find_windows(i3, thunderbird_name, todoist_name):
     thunderbird = None
     todoist = None
     for con in i3.get_tree():
-        if con.app_id == thunderbird_name:
+        if con.app_id == thunderbird_name or con.window_class == thunderbird_name:
             thunderbird = con
-        elif con.window_class == todoist_name:
+        elif con.window_class == todoist_name or con.app_id == todoist_name:
             todoist = con
     return thunderbird, todoist
 
 
-def is_layout_correct(i3, thunderbird, todoist):
+def is_layout_correct(thunderbird, todoist):
     workspace = thunderbird.workspace().num if thunderbird else None
     # Check if both are on the same workspace
     if (
@@ -40,11 +40,14 @@ def adjust_layout(thunderbird_name, todoist_name):
     print("Both windows found. Proceeding with layout adjustment.")
 
     # Check if the layout is already correct
-    if is_layout_correct(i3, thunderbird, todoist):
+    if is_layout_correct(thunderbird, todoist):
         print("Layout is already correct. No changes needed.")
         return
 
     # Get the current workspace
+    if i3.get_tree().find_focused() is None:
+        print("No window is focused. No changes needed.")
+        return
     current_workspace = i3.get_tree().find_focused().workspace().num
 
     # Move Thunderbird to workspace 7
